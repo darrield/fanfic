@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { NavLink, useNavigate } from "react-router"
-import ApiClient from "../../utils/Apiclient"
+import ApiClient from "../../utils/ApiClient"
 
 function AddFanfic() {
     const navigate = useNavigate()
