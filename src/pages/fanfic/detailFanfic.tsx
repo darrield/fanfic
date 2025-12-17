@@ -15,7 +15,7 @@ interface Comment {
   createdAt: string
 }
 
-export default function DetailFanfic() {
+function DetailFanfic() {
   const { id } = useParams()
   const navigate = useNavigate()
 
@@ -130,3 +130,5 @@ export default function DetailFanfic() {
     </div>
   )
 }
+
+export default DetailFanfic

@@ -11,7 +11,7 @@ interface Fanfic {
   }
 }
 
-export default function Home() {
+function Home() {
   const [fanfic, setFanfic] = useState<Fanfic[]>([])
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState<string | null>(null)
@@ -129,3 +129,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default Home
