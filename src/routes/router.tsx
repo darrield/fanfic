@@ -28,7 +28,30 @@ const router = createBrowserRouter([
                 }
             }
         ]
-    }
+    },
+        {
+        path : "/auth",
+        children : [
+            {
+                index : true,
+                lazy : {
+                    Component : async() => {
+                        const component = await import("../pages/auth/signup/SignUp.tsx")
+                        return component.default
+                    }
+                }
+            },
+            {
+                path : "signIn",
+                lazy : {
+                    Component : async() => {
+                        const component = await import("../pages/auth/signin/SignIn.tsx")
+                        return component.default
+                    }
+                }
+            }
+        ]    
+    },  
 ])
 
 export default router

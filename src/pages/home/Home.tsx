@@ -14,6 +14,26 @@ interface Fanfic {
 export default function Home() {
   const [fanfic, setFanfic] = useState<Fanfic[]>([])
   const [loading, setLoading] = useState(true)
+  const [username, setUsername] = useState<string | null>(null)
+  const isLoggedIn = !!localStorage.getItem("AuthToken")
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      const token = localStorage.getItem("AuthToken")
+      try {
+        const payload = JSON.parse(atob(token!.split('.')[1]))
+        setUsername(payload.username || "User")
+      } catch {
+        setUsername("User")
+      }
+    }
+  }, [isLoggedIn])
+
+  const handleSignOut = () => {
+    localStorage.removeItem("AuthToken")
+    setUsername(null)
+    window.location.reload()
+  }
 
   useEffect(() => {
     const fetchFanfic = async () => {
@@ -33,17 +53,29 @@ export default function Home() {
   return (
     <div>
       {/* ===== HERO ===== */}
-      <section className="bg-dark text-white py-5">
+      <section className="bg-dark text-white py-5 position-relative">
         <div className="container text-center">
           <h1 className="fw-bold">Fanfic Forge</h1>
           <p className="lead mt-2">
             Platform komunitas untuk menulis dan membaca cerita fiksi
           </p>
+          {isLoggedIn ? (
+            <p className="mt-2">Welcome back, {username}! You are logged in.</p>
+          ) : (
+            <p className="mt-2">You are browsing as a guest.</p>
+          )}
 
-          <NavLink to="/login" className="btn btn-primary btn-lg mt-3">
-            Mulai Menulis
+          <NavLink to={isLoggedIn ? "/add-fanfic" : "/auth"} className="btn btn-primary btn-lg mt-3">
+            {isLoggedIn ? "Tambah Cerita" : "Mulai Menulis"}
           </NavLink>
         </div>
+        {isLoggedIn && (
+          <div className="position-absolute bottom-0 end-0 p-3">
+            <button className="btn btn-outline-light" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
+        )}
       </section>
 
       {/* ===== CONTENT ===== */}
