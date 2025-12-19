@@ -69,13 +69,38 @@ function Home() {
             {isLoggedIn ? "Tambah Cerita" : "Mulai Menulis"}
           </NavLink>
         </div>
-        {isLoggedIn && (
-          <div className="position-absolute bottom-0 end-0 p-3">
-            <button className="btn btn-outline-light" onClick={handleSignOut}>
-              Sign Out
-            </button>
-          </div>
-        )}
+        {isLoggedIn && username && (
+            <div className="position-absolute top-0 end-0 p-3">
+              <div className="dropdown">
+                <button
+                  className="btn btn-outline-light dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  👤 {username}
+                </button>
+
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <NavLink className="dropdown-item" to="/profile">
+                      Profil Saya
+                    </NavLink>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={handleSignOut}
+                    >
+                      Sign Out
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+
       </section>
 
       {/* ===== CONTENT ===== */}

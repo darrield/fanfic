@@ -26,7 +26,15 @@ const router = createBrowserRouter([
                     const component = await import("../pages/fanfic/detailFanfic")
                     return { Component: component.default }
                 }
+            },
+            {
+                path: "profile",
+                lazy: async () => {
+                    const component = await import("../pages/profile/profile.tsx")
+                    return { Component: component.default }
+                }
             }
+
         ]
     },
         {
