@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useParams, useNavigate } from "react-router"
+import { useParams, useNavigate, NavLink } from "react-router"
 import ApiClient from "../../utils/ApiClient"
 import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
@@ -85,9 +85,21 @@ function DetailFanfic() {
       <div className="container my-5">
         <Card className="shadow-sm">
           <Card.Body className="p-5">
-            <h1>{fanfic.judul}</h1>
+            <h1 className="d-flex justify-content-between align-items-center">
+              <span>{fanfic.judul}</span>
+              <NavLink to={`/author/${fanfic.createdby?.username}`} className="text-decoration-none">
+                <div
+                  className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                  style={{ width: 50, height: 50, fontSize: 20 }}
+                >
+                  {fanfic.createdby?.username.charAt(0).toUpperCase()}
+                </div>
+              </NavLink>
+            </h1>
             <p className="text-muted">
-              By {fanfic.createdby?.username} | Genre: {fanfic.Genre}
+              By <NavLink to={`/author/${fanfic.createdby?.username}`} className="text-muted text-decoration-none">
+                <i className="bi bi-person-circle me-1"></i>{fanfic.createdby?.username}
+              </NavLink> | Genre: {fanfic.Genre}
             </p>
 
             <Button

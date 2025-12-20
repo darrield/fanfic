@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react"
 import { NavLink, useNavigate } from "react-router"
+import ApiClient from "../../utils/ApiClient"
+import Card from "react-bootstrap/Card"
 
 interface UserPayload {
+  _id: string
   username: string
+  followers: any[]
+  following: any[]
+}
+
+interface Fanfic {
+  _id: string
+  judul: string
+  Genre: string
 }
 
 function Profile() {
   const navigate = useNavigate()
   const [user, setUser] = useState<UserPayload | null>(null)
+  const [fanfics, setFanfics] = useState<Fanfic[]>([])
+  const [fanficsLoading, setFanficsLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const token = localStorage.getItem("AuthToken")
@@ -17,13 +31,68 @@ function Profile() {
       return
     }
 
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]))
-      setUser({ username: payload.username })
-    } catch {
-      localStorage.removeItem("AuthToken")
-      navigate("/auth/signIn")
+    const fetchData = () => {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]))
+        const userId = payload.user_id
+        const username = payload.username
+
+        // Fetch user data
+        ApiClient.get(`/users/${userId}`)
+          .then(response => {
+            setUser(response.data)
+          })
+          .catch(err => {
+            console.error('Failed to fetch user data:', err)
+            // Fallback to token data
+            setUser({ _id: userId, username, followers: [], following: [] })
+          })
+
+        // Fetch following and followers counts
+        Promise.all([
+          ApiClient.get('/following').catch(() => ({ data: { data: [] } })),
+          ApiClient.get('/followers').catch(() => ({ data: { data: [] } }))
+        ]).then(([followingRes, followersRes]) => {
+          const following = followingRes.data.data || []
+          const followers = followersRes.data.data || []
+          setUser(prevUser => prevUser ? {
+            ...prevUser,
+            following,
+            followers
+          } : {
+            _id: userId,
+            username,
+            following,
+            followers
+          })
+        }).catch(err => {
+          console.error('Failed to fetch follow data:', err)
+        })
+
+        // Fetch fanfics
+        ApiClient.get('/public/fanfic')
+          .then(response => {
+            const allFanfics = response.data.data || []
+            const userFanfics = allFanfics.filter((fanfic: any) => fanfic.createdby?.username === username)
+            setFanfics(userFanfics)
+          })
+          .catch(err => {
+            console.error('Failed to fetch fanfics:', err)
+          })
+          .finally(() => {
+            setFanficsLoading(false)
+          })
+
+      } catch (tokenError) {
+        console.error('Token parsing failed:', tokenError)
+        localStorage.removeItem("AuthToken")
+        navigate("/auth/signIn")
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchData()
   }, [navigate])
 
   if (!user) {
@@ -51,7 +120,19 @@ function Profile() {
 
               {/* Username */}
               <h4 className="mb-1">{user.username}</h4>
-              <p className="text-muted mb-4">Penulis di Fanfic Forge</p>
+              <p className="text-muted mb-3">Penulis di Fanfic Forge</p>
+
+              {/* Follow Stats */}
+              <div className="d-flex justify-content-center gap-4 mb-4">
+                <div className="text-center">
+                  <div className="h5 mb-0">{user.followers?.length || 0}</div>
+                  <small className="text-muted">Followers</small>
+                </div>
+                <div className="text-center">
+                  <div className="h5 mb-0">{user.following?.length || 0}</div>
+                  <small className="text-muted">Following</small>
+                </div>
+              </div>
 
               {/* Action */}
               <div className="d-grid gap-2">
@@ -64,6 +145,41 @@ function Profile() {
               </div>
 
             </div>
+          </div>
+
+          {/* Fanfics Section */}
+          <div className="mt-5">
+            <h5 className="mb-4">Your Stories</h5>
+            {fanficsLoading ? (
+              <div className="text-center">
+                <div className="spinner-border spinner-border-sm" />
+              </div>
+            ) : fanfics.length > 0 ? (
+              <div className="row g-4">
+                {fanfics.map(fanfic => (
+                  <div key={fanfic._id} className="col-lg-6 col-md-12">
+                    <Card className="h-100 shadow-sm border-0 bg-light">
+                      <Card.Body className="p-4">
+                        <Card.Title className="h5 mb-2 text-dark">{fanfic.judul}</Card.Title>
+                        <Card.Text className="text-muted mb-3">
+                          <small>Genre: <span className="badge bg-secondary">{fanfic.Genre}</span></small>
+                        </Card.Text>
+                        <NavLink to={`/fanfic/${fanfic._id}`} className="btn btn-outline-primary w-100 d-block text-center">
+                          Read Story
+                        </NavLink>
+                      </Card.Body>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-5">
+                <p className="text-muted h6">No stories posted yet.</p>
+                <NavLink to="/add-fanfic" className="btn btn-primary mt-2">
+                  Write Your First Story
+                </NavLink>
+              </div>
+            )}
           </div>
         </div>
       </div>
