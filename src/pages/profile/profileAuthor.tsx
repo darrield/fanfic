@@ -19,7 +19,6 @@ function ProfileAuthor() {
   const navigate = useNavigate()
   const { username } = useParams<{ username: string }>()
   
-  // State
   const [user, setUser] = useState<UserPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +27,7 @@ function ProfileAuthor() {
   const [followLoading, setFollowLoading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  // Load button state from LocalStorage (keeps button consistent on refresh)
+  // Muat status tombol dari LocalStorage (menjaga konsistensi tombol saat penyegaran)
   const loadFollowButtonState = (authorId: string, userId: string) => {
     const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${userId}`) || '[]')
     setIsFollowing(followedAuthors.includes(authorId))
@@ -43,7 +42,7 @@ function ProfileAuthor() {
         const nowFollowing = response.data.isFollowing
         setIsFollowing(nowFollowing)
         
-        // Update LocalStorage so the button stays correct on refresh
+        // Perbarui LocalStorage agar tombol tetap benar saat halaman dimuat ulang.
         const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${currentUserId}`) || '[]')
         
         if (nowFollowing) {
@@ -74,7 +73,7 @@ function ProfileAuthor() {
       return
     }
 
-    // Get current user ID
+    // Ambil User ID
     let userId = ""
     try {
       const payload = JSON.parse(atob(token.split(".")[1]))
@@ -91,7 +90,7 @@ function ProfileAuthor() {
       return
     }
 
-    // Fetch fanfics to get Author Data
+    // Ambil Fanfic dari data author
     ApiClient.get('/public/fanfic')
       .then(response => {
         const allFanfics = response.data.data || []
@@ -106,23 +105,20 @@ function ProfileAuthor() {
             username: authorData.username,
           })
 
-          // Check if we are already following (Sync button state)
+          // Cek status follow  
           if (userId && authorData._id !== userId) {
-            // Priority 1: Check backend list if available
             if (authorData.followers && Array.isArray(authorData.followers)) {
                const isInList = authorData.followers.some((f: any) => 
                  (typeof f === 'string' ? f : f._id) === userId
                )
                setIsFollowing(isInList)
                
-               // Sync LocalStorage to match Backend
                const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${userId}`) || '[]')
                if (isInList && !followedAuthors.includes(authorData._id)) {
                  followedAuthors.push(authorData._id)
                  localStorage.setItem(`followedAuthors_${userId}`, JSON.stringify(followedAuthors))
                }
             } else {
-              // Priority 2: Fallback to LocalStorage
               loadFollowButtonState(authorData._id, userId)
             }
           }
@@ -167,19 +163,15 @@ function ProfileAuthor() {
           <div className="card shadow-sm">
             <div className="card-body text-center">
               
-              {/* Avatar */}
               <div
                 className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
                 style={{ width: 100, height: 100, fontSize: 36 }}
               >
                 {user.username.charAt(0).toUpperCase()}
               </div>
-
-              {/* Username */}
               <h4 className="mb-1">{user.username}</h4>
               <p className="text-muted mb-4">Penulis di Fanfic Forge</p>
 
-              {/* Follow Button (Only show if not looking at own profile) */}
               {currentUserId && user._id !== currentUserId && (
                 <div className="d-grid gap-2 mb-4">
                   <button
@@ -199,7 +191,6 @@ function ProfileAuthor() {
                 </div>
               )}
 
-              {/* Action */}
               <div className="d-grid gap-2">
                 <NavLink to="/" className="btn btn-outline-secondary">
                   Kembali ke Home
@@ -209,7 +200,6 @@ function ProfileAuthor() {
             </div>
           </div>
 
-          {/* Fanfics Section */}
           <div className="mt-5">
             <h5 className="mb-4">Stories by {user.username}</h5>
             {fanfics.length > 0 ? (

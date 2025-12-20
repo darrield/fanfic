@@ -47,7 +47,14 @@ const router = createBrowserRouter([
                     const component = await import("../pages/bookmark/Bookmarks")
                     return { Component: component.default }
                 }
+            },
+            {
+                path: "following-stories",
+                lazy: async () => {
+                    const component = await import("../pages/fanfic/followFanfic")
+                    return { Component: component.default }
                 }
+            }
 
         ]
     },

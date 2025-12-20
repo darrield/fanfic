@@ -37,7 +37,7 @@ function Profile() {
         const userId = payload.user_id
         const username = payload.username
 
-        // Fetch user data
+        // Ambil data user
         ApiClient.get(`/users/${userId}`)
           .then(response => {
             setUser(response.data)
@@ -48,7 +48,7 @@ function Profile() {
             setUser({ _id: userId, username, followers: [], following: [] })
           })
 
-        // Fetch following and followers counts
+        // Ambiel jumlah followers dan following
         Promise.all([
           ApiClient.get('/following').catch(() => ({ data: { data: [] } })),
           ApiClient.get('/followers').catch(() => ({ data: { data: [] } }))
@@ -69,7 +69,7 @@ function Profile() {
           console.error('Failed to fetch follow data:', err)
         })
 
-        // Fetch fanfics
+        // Ambil fanfic
         ApiClient.get('/public/fanfic')
           .then(response => {
             const allFanfics = response.data.data || []
@@ -110,7 +110,6 @@ function Profile() {
           <div className="card shadow-sm">
             <div className="card-body text-center">
               
-              {/* Avatar */}
               <div
                 className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
                 style={{ width: 100, height: 100, fontSize: 36 }}
@@ -118,11 +117,9 @@ function Profile() {
                 {user.username.charAt(0).toUpperCase()}
               </div>
 
-              {/* Username */}
               <h4 className="mb-1">{user.username}</h4>
               <p className="text-muted mb-3">Penulis di Fanfic Forge</p>
 
-              {/* Follow Stats */}
               <div className="d-flex justify-content-center gap-4 mb-4">
                 <div className="text-center">
                   <div className="h5 mb-0">{user.followers?.length || 0}</div>
@@ -134,7 +131,6 @@ function Profile() {
                 </div>
               </div>
 
-              {/* Action */}
               <div className="d-grid gap-2">
                 <NavLink to="/add-fanfic" className="btn btn-primary">
                   Tulis Cerita Baru
@@ -147,7 +143,6 @@ function Profile() {
             </div>
           </div>
 
-          {/* Fanfics Section */}
           <div className="mt-5">
             <h5 className="mb-4">Your Stories</h5>
             {fanficsLoading ? (
