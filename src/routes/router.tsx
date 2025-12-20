@@ -21,6 +21,13 @@ const router = createBrowserRouter([
                 }
             },
             {
+                path: "edit-fanfic/:id",
+                lazy: async () => {
+                    const component = await import("../pages/fanfic/editFanfic")
+                    return { Component: component.default }
+                }
+            },
+            {
                 path: "fanfic/:id",
                 lazy: async () => {
                     const component = await import("../pages/fanfic/detailFanfic")

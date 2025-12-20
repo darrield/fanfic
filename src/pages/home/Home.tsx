@@ -68,7 +68,6 @@ function Home() {
 
       </section>
 
-      {/* ===== CONTENT ===== */}
       <div className="container my-5">
         <h3 className="mb-4">Cerita Terbaru</h3>
 

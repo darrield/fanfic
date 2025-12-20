@@ -95,6 +95,21 @@ function Profile() {
     fetchData()
   }, [navigate])
 
+  const handleDelete = async (id: string) => {
+      if (!window.confirm("Apakah kamu yakin ingin menghapus cerita ini? Tindakan ini tidak bisa dibatalkan.")) {
+        return
+      }
+
+      try {
+        await ApiClient.delete(`/fanfic/${id}`)
+        setFanfics(currentFanfics => currentFanfics.filter(f => f._id !== id))
+        
+      } catch (err) {
+        console.error("Gagal menghapus:", err)
+        alert("Gagal menghapus cerita. Silakan coba lagi.")
+      }
+  }
+
   if (!user) {
     return (
       <div className="container mt-5 text-center">
@@ -154,14 +169,32 @@ function Profile() {
                 {fanfics.map(fanfic => (
                   <div key={fanfic._id} className="col-lg-6 col-md-12">
                     <Card className="h-100 shadow-sm border-0 bg-light">
-                      <Card.Body className="p-4">
+                      <Card.Body className="p-4 d-flex flex-column">
                         <Card.Title className="h5 mb-2 text-dark">{fanfic.judul}</Card.Title>
                         <Card.Text className="text-muted mb-3">
                           <small>Genre: <span className="badge bg-secondary">{fanfic.Genre}</span></small>
                         </Card.Text>
-                        <NavLink to={`/fanfic/${fanfic._id}`} className="btn btn-outline-primary w-100 d-block text-center">
-                          Read Story
-                        </NavLink>
+                        
+                        <div className="mt-auto d-flex gap-2">
+                            <NavLink to={`/fanfic/${fanfic._id}`} 
+                                className="btn btn-outline-primary flex-grow-1"
+                            >
+                                Read Story
+                            </NavLink>
+                            
+                            <NavLink to={`/edit-fanfic/${fanfic._id}`} 
+                                className="btn btn-warning"
+                            >
+                                <i className="bi bi-pencil-square"></i> Edit
+                            </NavLink>
+                            <button 
+                                onClick={() => handleDelete(fanfic._id)} 
+                                className="btn btn-danger"
+                                title="Hapus Cerita"
+                            >
+                                <i className="bi bi-trash"></i>
+                            </button>
+                        </div>
                       </Card.Body>
                     </Card>
                   </div>
