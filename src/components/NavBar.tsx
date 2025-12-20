@@ -71,7 +71,7 @@ export default function Navbar() {
           <ul className="navbar-nav">
             {!isLoggedIn ? (
               <li className="nav-item">
-                <NavLink className="btn btn-outline-light" to="/auth">
+                <NavLink className="btn btn-outline-light" to="/auth/signIn">
                   Login
                 </NavLink>
               </li>

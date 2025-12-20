@@ -48,11 +48,22 @@ function Home() {
 
   return (
     <div>
-      {/* ===== HERO ===== */}
-      <section className="bg-dark text-white py-5 position-relative">
+      {/* ===== HERO ===== className="bg-dark text-white py-5 position-relative"*/}
+      <section className="text-white py-5 position-relative" 
+        style={{
+        backgroundImage : "url('/Lukisan-Abstrak.jpg')",
+        backgroundSize : "cover",
+        backgroundPosition : "center",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundBlendMode: "darken",
+        opacity: 0.9,
+        height: "300px"
+        }
+      }
+        >
         <div className="container text-center">
           <h1 className="fw-bold">Fanfic Forge</h1>
-          <p className="lead mt-2">
+          <p className="lead mt-1">
             Platform komunitas untuk menulis dan membaca cerita fiksi
           </p>
           {isLoggedIn ? (
@@ -61,7 +72,7 @@ function Home() {
             <p className="mt-2">You are browsing as a guest.</p>
           )}
 
-          <NavLink to={isLoggedIn ? "/add-fanfic" : "/auth"} className="btn btn-primary btn-lg mt-3">
+          <NavLink to={isLoggedIn ? "/add-fanfic" : "/auth"} className="btn btn-outline-light btn-lg mt-3">
             {isLoggedIn ? "Tambah Cerita" : "Mulai Menulis"}
           </NavLink>
         </div>
@@ -98,7 +109,7 @@ function Home() {
 
                   <NavLink
                     to={`/fanfic/${item._id}`}
-                    className="btn btn-outline-primary mt-auto"
+                    className="btn btn-outline-dark mt-auto"
                   >
                     Baca Cerita
                   </NavLink>

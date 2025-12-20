@@ -103,7 +103,7 @@ function DetailFanfic() {
             </p>
 
             <Button
-              variant={isBookmarked ? "danger" : "outline-danger"}
+              variant={isBookmarked ? "danger" : "outline-info"}
               className="mb-4"
               onClick={handleBookmark}
             >
@@ -116,7 +116,7 @@ function DetailFanfic() {
 
             {!isLoggedIn ? (
               <div className="text-center">
-                <Button onClick={() => navigate("/auth")}>
+                <Button variant="outline-danger" onClick={() => navigate("/auth")}>
                   Login untuk komentar
                 </Button>
               </div>

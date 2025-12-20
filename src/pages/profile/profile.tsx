@@ -147,7 +147,7 @@ function Profile() {
               </div>
 
               <div className="d-grid gap-2">
-                <NavLink to="/add-fanfic" className="btn btn-primary">
+                <NavLink to="/add-fanfic" className="btn btn-dark">
                   Tulis Cerita Baru
                 </NavLink>
                 <NavLink to="/" className="btn btn-outline-secondary">
