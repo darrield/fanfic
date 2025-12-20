@@ -25,26 +25,40 @@ function DetailFanfic() {
   const [loading, setLoading] = useState(true)
   const [commentLoading, setCommentLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isBookmarked, setIsBookmarked] = useState(false)
 
   const isLoggedIn = !!localStorage.getItem("AuthToken")
 
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const res = await ApiClient.get(`/public/fanfic/${id}`)
+        const res = await ApiClient.get(`/fanfic/${id}`)
         setFanfic(res.data.data)
-        if (isLoggedIn) {
-          setComments(res.data.data.comments || [])
-        }
-      } catch (error) {
-        console.error(error)
+        setComments(res.data.data.comments || [])
+        setIsBookmarked(res.data.isBookmarked || false)
+      } catch (err) {
+        console.error(err)
       } finally {
         setLoading(false)
       }
     }
 
     fetchDetail()
-  }, [id, isLoggedIn])
+  }, [id])
+
+  const handleBookmark = async () => {
+  if (!isLoggedIn) {
+    navigate("/auth")
+    return
+  }
+
+  try {
+  const res = await ApiClient.post(`/fanfic/${id}/bookmark`)
+  setIsBookmarked(res.data.isBookmarked)
+  } catch (err) {
+    console.error(err)
+  }
+}
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,73 +70,73 @@ function DetailFanfic() {
       const res = await ApiClient.post(`/fanfic/${id}/comment`, { isi: newComment })
       setComments(res.data.data)
       setNewComment("")
-    } catch (error) {
+    } catch {
       setError("Failed to post comment")
     } finally {
       setCommentLoading(false)
     }
   }
 
-  if (loading) return <div className="container my-5 text-center"><p>Loading...</p></div>
-  if (!fanfic) return <div className="container my-5 text-center"><p>Fanfic tidak ditemukan</p></div>
+  if (loading) return <div className="container my-5 text-center">Loading...</div>
+  if (!fanfic) return <div className="container my-5 text-center">Fanfic tidak ditemukan</div>
 
   return (
     <div className="bg-light min-vh-100">
       <div className="container my-5">
         <Card className="shadow-sm">
           <Card.Body className="p-5">
-            <h1 className="mb-3">{fanfic.judul}</h1>
-            <p className="text-muted mb-4">By {fanfic.createdby?.username} | Genre: {fanfic.Genre}</p>
-            <div className="mb-4" style={{ whiteSpace: 'pre-wrap' }}>
-              {fanfic.Cerita}
-            </div>
+            <h1>{fanfic.judul}</h1>
+            <p className="text-muted">
+              By {fanfic.createdby?.username} | Genre: {fanfic.Genre}
+            </p>
+
+            <Button
+              variant={isBookmarked ? "danger" : "outline-danger"}
+              className="mb-4"
+              onClick={handleBookmark}
+            >
+               {isBookmarked ? "Bookmarked" : "Bookmark"}
+            </Button>
+
+            <div style={{ whiteSpace: "pre-wrap" }}>{fanfic.Cerita}</div>
+
+            <hr />
 
             {!isLoggedIn ? (
               <div className="text-center">
-                <Button variant="primary" onClick={() => navigate("/auth")}>
-                  Login untuk komentar / bookmark
+                <Button onClick={() => navigate("/auth")}>
+                  Login untuk komentar
                 </Button>
               </div>
             ) : (
-              <div>
-                <hr />
-                <h3 className="mb-3">Comments</h3>
+              <>
+                <h4>Comments</h4>
                 {error && <Alert variant="danger">{error}</Alert>}
-                <Form onSubmit={handleCommentSubmit} className="mb-4">
-                  <Form.Group>
-                    <Form.Control
-                      as="textarea"
-                      rows={3}
-                      placeholder="Write a comment..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      required
-                    />
-                  </Form.Group>
-                  <Button type="submit" variant="primary" className="mt-2" disabled={commentLoading}>
+
+                <Form onSubmit={handleCommentSubmit} className="mb-3">
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  />
+                  <Button type="submit" className="mt-2" disabled={commentLoading}>
                     {commentLoading ? "Posting..." : "Post Comment"}
                   </Button>
                 </Form>
 
-                <div>
-                  {comments.length === 0 ? (
-                    <p className="text-muted">No comments yet. Be the first to comment!</p>
-                  ) : (
-                    comments.map((comment) => (
-                      <Card key={comment._id} className="mb-3">
-                        <Card.Body>
-                          <p className="mb-1">
-                            <strong>{comment.createdby.username}:</strong> {comment.isi}
-                          </p>
-                          <small className="text-muted">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </small>
-                        </Card.Body>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
+                {comments.map((comment) => (
+                  <Card key={comment._id} className="mb-2">
+                    <Card.Body>
+                      <strong>{comment.createdby.username}</strong>
+                      <p>{comment.isi}</p>
+                      <small className="text-muted">
+                        {new Date(comment.createdAt).toLocaleString()}
+                      </small>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </>
             )}
           </Card.Body>
         </Card>

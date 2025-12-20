@@ -33,7 +33,14 @@ const router = createBrowserRouter([
                     const component = await import("../pages/profile/profile.tsx")
                     return { Component: component.default }
                 }
-            }
+            },
+            {
+                path: "bookmarks",
+                lazy: async () => {
+                    const component = await import("../pages/bookmark/Bookmarks")
+                    return { Component: component.default }
+                }
+                }
 
         ]
     },

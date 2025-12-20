@@ -29,11 +29,7 @@ function Home() {
     }
   }, [isLoggedIn])
 
-  const handleSignOut = () => {
-    localStorage.removeItem("AuthToken")
-    setUsername(null)
-    window.location.reload()
-  }
+
 
   useEffect(() => {
     const fetchFanfic = async () => {
@@ -69,37 +65,6 @@ function Home() {
             {isLoggedIn ? "Tambah Cerita" : "Mulai Menulis"}
           </NavLink>
         </div>
-        {isLoggedIn && username && (
-            <div className="position-absolute top-0 end-0 p-3">
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-light dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  👤 {username}
-                </button>
-
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <NavLink className="dropdown-item" to="/profile">
-                      Profil Saya
-                    </NavLink>
-                  </li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button
-                      className="dropdown-item text-danger"
-                      onClick={handleSignOut}
-                    >
-                      Sign Out
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
 
       </section>
 
@@ -145,12 +110,7 @@ function Home() {
         </div>
       </div>
 
-      {/* ===== FOOTER ===== */}
-      <footer className="bg-light py-3">
-        <div className="container text-center text-muted">
-          © {new Date().getFullYear()} Fanfic Forge
-        </div>
-      </footer>
+
     </div>
   )
 }
