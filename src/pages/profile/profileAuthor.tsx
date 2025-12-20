@@ -6,19 +6,20 @@ import Card from "react-bootstrap/Card"
 interface UserPayload {
   _id: string
   username: string
-  followers: any[]
-  following: any[]
 }
 
 interface Fanfic {
   _id: string
   judul: string
   Genre: string
+  createdby: any
 }
 
 function ProfileAuthor() {
   const navigate = useNavigate()
   const { username } = useParams<{ username: string }>()
+  
+  // State
   const [user, setUser] = useState<UserPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,22 +28,10 @@ function ProfileAuthor() {
   const [followLoading, setFollowLoading] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  // Load follow status from localStorage
-  const loadFollowStatus = (authorId: string, userId: string) => {
-    const followedAuthors = JSON.parse(localStorage.getItem('followedAuthors') || '[]')
-    const isUserFollowing = followedAuthors.includes(authorId)
-    setIsFollowing(isUserFollowing)
-    
-    // Set follower count based on follow status (approximate)
-    setUser(prevUser => {
-      if (!prevUser) return prevUser
-      const count = isUserFollowing ? 1 : 0
-      const followers = Array(count).fill({}).map((_, i) => ({ _id: `follower_${i}`, username: `Follower ${i+1}` }))
-      return {
-        ...prevUser,
-        followers
-      }
-    })
+  // Load button state from LocalStorage (keeps button consistent on refresh)
+  const loadFollowButtonState = (authorId: string, userId: string) => {
+    const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${userId}`) || '[]')
+    setIsFollowing(followedAuthors.includes(authorId))
   }
 
   const handleToggleFollow = () => {
@@ -54,8 +43,9 @@ function ProfileAuthor() {
         const nowFollowing = response.data.isFollowing
         setIsFollowing(nowFollowing)
         
-        // Save to localStorage
-        const followedAuthors = JSON.parse(localStorage.getItem('followedAuthors') || '[]')
+        // Update LocalStorage so the button stays correct on refresh
+        const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${currentUserId}`) || '[]')
+        
         if (nowFollowing) {
           if (!followedAuthors.includes(user._id)) {
             followedAuthors.push(user._id)
@@ -66,22 +56,7 @@ function ProfileAuthor() {
             followedAuthors.splice(index, 1)
           }
         }
-        localStorage.setItem('followedAuthors', JSON.stringify(followedAuthors))
-        
-        // Update follower count optimistically
-        setUser(prevUser => {
-          if (!prevUser) return prevUser
-          const currentCount = prevUser.followers?.length || 0
-          const newCount = nowFollowing ? currentCount + 1 : Math.max(0, currentCount - 1)
-          
-          // Create array with new length
-          const newFollowers = Array(newCount).fill({}).map((_, i) => ({ _id: `temp_${i}`, username: `User ${i+1}` }))
-          
-          return {
-            ...prevUser,
-            followers: newFollowers
-          }
-        })
+        localStorage.setItem(`followedAuthors_${currentUserId}`, JSON.stringify(followedAuthors))
       })
       .catch(error => {
         console.error('Follow failed:', error)
@@ -99,7 +74,7 @@ function ProfileAuthor() {
       return
     }
 
-    // Get current user id
+    // Get current user ID
     let userId = ""
     try {
       const payload = JSON.parse(atob(token.split(".")[1]))
@@ -116,37 +91,47 @@ function ProfileAuthor() {
       return
     }
 
-    // Fetch fanfics first
+    // Fetch fanfics to get Author Data
     ApiClient.get('/public/fanfic')
       .then(response => {
         const allFanfics = response.data.data || []
         const authorFanfics = allFanfics.filter((fanfic: any) => fanfic.createdby?.username === username)
         setFanfics(authorFanfics)
 
-        // Set user data from fanfics
         if (authorFanfics.length > 0) {
           const authorData = authorFanfics[0].createdby
+          
           setUser({
             _id: authorData._id,
             username: authorData.username,
-            followers: [],
-            following: []
           })
 
-          // Load follow status from localStorage
+          // Check if we are already following (Sync button state)
           if (userId && authorData._id !== userId) {
-            loadFollowStatus(authorData._id, userId)
+            // Priority 1: Check backend list if available
+            if (authorData.followers && Array.isArray(authorData.followers)) {
+               const isInList = authorData.followers.some((f: any) => 
+                 (typeof f === 'string' ? f : f._id) === userId
+               )
+               setIsFollowing(isInList)
+               
+               // Sync LocalStorage to match Backend
+               const followedAuthors = JSON.parse(localStorage.getItem(`followedAuthors_${userId}`) || '[]')
+               if (isInList && !followedAuthors.includes(authorData._id)) {
+                 followedAuthors.push(authorData._id)
+                 localStorage.setItem(`followedAuthors_${userId}`, JSON.stringify(followedAuthors))
+               }
+            } else {
+              // Priority 2: Fallback to LocalStorage
+              loadFollowButtonState(authorData._id, userId)
+            }
           }
         } else {
-          // No fanfics found
           setUser({
             _id: 'unknown',
             username,
-            followers: [],
-            following: []
           })
         }
-
         setLoading(false)
       })
       .catch(err => {
@@ -192,22 +177,10 @@ function ProfileAuthor() {
 
               {/* Username */}
               <h4 className="mb-1">{user.username}</h4>
-              <p className="text-muted mb-3">Penulis di Fanfic Forge</p>
+              <p className="text-muted mb-4">Penulis di Fanfic Forge</p>
 
-              {/* Follow Stats */}
-              <div className="d-flex justify-content-center gap-4 mb-4">
-                <div className="text-center">
-                  <div className="h5 mb-0">{user.followers?.length || 0}</div>
-                  <small className="text-muted">Followers</small>
-                </div>
-                <div className="text-center">
-                  <div className="h5 mb-0">{user.following?.length || 0}</div>
-                  <small className="text-muted">Following</small>
-                </div>
-              </div>
-
-              {/* Follow Button */}
-              {currentUserId && user._id !== currentUserId && user._id !== 'unknown' && (
+              {/* Follow Button (Only show if not looking at own profile) */}
+              {currentUserId && user._id !== currentUserId && (
                 <div className="d-grid gap-2 mb-4">
                   <button
                     className={`btn ${isFollowing ? 'btn-outline-secondary' : 'btn-primary'}`}
